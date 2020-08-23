@@ -3,6 +3,7 @@ module github.com/giansalex/scavenge
 go 1.13
 
 require (
+	github.com/Workiva/go-datastructures v1.0.52
 	github.com/btcsuite/btcd v0.0.0-20190807005414-4063feeff79a // indirect
 	github.com/cosmos/cosmos-sdk v0.38.2
 	github.com/golang/mock v1.3.1 // indirect
