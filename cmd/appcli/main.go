@@ -25,7 +25,6 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/giansalex/scavenge/app"
-
 )
 
 func main() {
@@ -47,8 +46,8 @@ func main() {
 	// with the cdc
 
 	rootCmd := &cobra.Command{
-		Use:   "appcli",
-		Short: "Command line interface for interacting with appd",
+		Use:   "scavengeCLI",
+		Short: "Scavenge Client",
 	}
 
 	// Add --chain-id to persistent flags and mark it required
