@@ -2,7 +2,6 @@ package scavenge
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/giansalex/scavenge/x/scavenge/types"
 )
 
