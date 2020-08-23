@@ -49,10 +49,11 @@ func getCreateScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
+		addr, _ := sdk.AccAddressFromBech32(baseReq.From)
 		var solutionHash = sha256.Sum256([]byte(req.Solution))
 		var solutionHashString = hex.EncodeToString(solutionHash[:])
 
-		msg := types.NewMsgCreateScavenge(cliCtx.GetFromAddress(), req.Description, solutionHashString, reward)
+		msg := types.NewMsgCreateScavenge(addr, req.Description, solutionHashString, reward)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -82,16 +83,17 @@ func getCommitScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
+		addr, _ := sdk.AccAddressFromBech32(baseReq.From)
+
 		var solution = req.Solution
 		var solutionHash = sha256.Sum256([]byte(solution))
 		var solutionHashString = hex.EncodeToString(solutionHash[:])
 
-		var scavenger = cliCtx.GetFromAddress().String()
-
+		var scavenger = addr.String()
 		var solutionScavengerHash = sha256.Sum256([]byte(solution + scavenger))
 		var solutionScavengerHashString = hex.EncodeToString(solutionScavengerHash[:])
 
-		msg := types.NewMsgCommitSolution(cliCtx.GetFromAddress(), solutionHashString, solutionScavengerHashString)
+		msg := types.NewMsgCommitSolution(addr, solutionHashString, solutionScavengerHashString)
 		err := msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -121,7 +123,8 @@ func getRevealScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgRevealSolution(cliCtx.GetFromAddress(), req.Solution)
+		addr, _ := sdk.AccAddressFromBech32(baseReq.From)
+		msg := types.NewMsgRevealSolution(addr, req.Solution)
 		err := msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
