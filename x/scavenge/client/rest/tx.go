@@ -82,13 +82,8 @@ func getCommitScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		reward, err := sdk.ParseCoins(req.Reward)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		var solutionHash = sha256.Sum256([]byte(req.Solution))
+		var solution = req.Solution
+		var solutionHash = sha256.Sum256([]byte(solution))
 		var solutionHashString = hex.EncodeToString(solutionHash[:])
 
 		var scavenger = cliCtx.GetFromAddress().String()
@@ -97,7 +92,7 @@ func getCommitScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 		var solutionScavengerHashString = hex.EncodeToString(solutionScavengerHash[:])
 
 		msg := types.NewMsgCommitSolution(cliCtx.GetFromAddress(), solutionHashString, solutionScavengerHashString)
-		err = msg.ValidateBasic()
+		err := msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -126,14 +121,8 @@ func getRevealScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		reward, err := sdk.ParseCoins(req.Reward)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
 		msg := types.NewMsgRevealSolution(cliCtx.GetFromAddress(), req.Solution)
-		err = msg.ValidateBasic()
+		err := msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
