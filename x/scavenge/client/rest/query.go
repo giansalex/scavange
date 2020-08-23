@@ -68,10 +68,7 @@ func getRestCommitScavenges(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 		vars := mux.Vars(r)
-		solution := vars["solutionHash"]
-		var solutionHash = sha256.Sum256([]byte(solution))
-		var solutionHashString = hex.EncodeToString(solutionHash[:])
-
+		var solution = vars["solution"]
 		var scavenger = vars["scavenger"]
 
 		var solutionScavengerHash = sha256.Sum256([]byte(solution + scavenger))
