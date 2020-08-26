@@ -30,6 +30,15 @@ scavengeCLI q account $(scavengeCLI keys show you -a)
 
 ```
 
+Delete if not solution reveal:
+```bash
+
+scavengeCLI tx scavenge deleteScavenge "giansalex" --from me
+
+# show me account balance
+scavengeCLI q account $(scavengeCLI keys show me -a)
+```
+
 
 Run REST client
 ```
