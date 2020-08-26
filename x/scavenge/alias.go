@@ -30,6 +30,7 @@ var (
 	NewMsgCommitSolution = types.NewMsgCommitSolution
 	NewMsgRevealSolution = types.NewMsgRevealSolution
 	NewMsgDeleteScavenge = types.NewMsgDeleteScavenge
+	NewMsgUpdateScavenge = types.NewMsgUpdateScavenge
 )
 
 type (
@@ -41,4 +42,5 @@ type (
 	MsgCommitSolution = types.MsgCommitSolution
 	MsgRevealSolution = types.MsgRevealSolution
 	MsgDeleteScavenge = types.MsgDeleteScavenge
+	MsgUpdateScavenge = types.MsgUpdateScavenge
 )
