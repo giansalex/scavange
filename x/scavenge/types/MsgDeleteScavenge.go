@@ -5,7 +5,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// MsgCommitSolution
+// MsgDeleteScavenge
 // ------------------------------------------------------------------------------
 var _ sdk.Msg = &MsgDeleteScavenge{}
 

@@ -9,6 +9,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateScavenge{}, "scavenge/CreateScavenge", nil)
 	cdc.RegisterConcrete(MsgCommitSolution{}, "scavenge/CommitSolution", nil)
 	cdc.RegisterConcrete(MsgRevealSolution{}, "scavenge/RevealSolution", nil)
+	cdc.RegisterConcrete(MsgDeleteScavenge{}, "scavenge/DeleteScavenge", nil)
 }
 
 // ModuleCdc defines the module codec
