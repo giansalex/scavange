@@ -22,6 +22,8 @@ func NewHandler(k Keeper) sdk.Handler {
 			return handleMsgCommitSolution(ctx, k, msg)
 		case MsgRevealSolution:
 			return handleMsgRevealSolution(ctx, k, msg)
+		case MsgDeleteScavenge:
+			return handleMsgDeleteScavenge(ctx, k, msg)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest,
 				fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg))
@@ -127,5 +129,29 @@ func handleMsgRevealSolution(ctx sdk.Context, k Keeper, msg MsgRevealSolution) (
 			sdk.NewAttribute(types.AttributeReward, scavenge.Reward.String()),
 		),
 	)
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+}
+
+func handleMsgDeleteScavenge(ctx sdk.Context, k Keeper, msg MsgDeleteScavenge) (*sdk.Result, error) {
+	var scavenge types.Scavenge
+	scavenge, err := k.GetScavenge(ctx, msg.SolutionHash)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "Scavenge with that solution hash doesn't exists")
+	}
+	if scavenge.Scavenger != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Scavenge has already been solved")
+	}
+
+	k.DeleteScavenge(ctx, msg.SolutionHash)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.EventTypeDeleteScavenge),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Scavenger.String()),
+			sdk.NewAttribute(types.AttributeSolutionHash, msg.SolutionHash),
+		),
+	)
+
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
