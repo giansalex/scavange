@@ -30,6 +30,16 @@ scavengeCLI q account $(scavengeCLI keys show you -a)
 
 ```
 
+Update scavenge:
+```bash
+
+scavengeCLI tx scavenge createScavenge 54foo "giansalex" "Hey, who am i?" --from me
+
+# show me account balance
+scavengeCLI q account $(scavengeCLI keys show me -a)
+```
+
+
 Delete if not solution reveal:
 ```bash
 
