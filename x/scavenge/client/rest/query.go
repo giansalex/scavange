@@ -18,6 +18,7 @@ const storeName = "scavenge"
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/scavenge/list", getRestListScavenges(cliCtx)).Methods("GET")
 	r.HandleFunc("/scavenge/get/{solutionHash}", getRestGetScavenges(cliCtx)).Methods("GET")
+	r.HandleFunc("/scavenge/commits", getRestListCommits(cliCtx)).Methods("GET")
 	r.HandleFunc("/scavenge/commit/{scavenger}/{solution}", getRestCommitScavenges(cliCtx)).Methods("GET")
 }
 
@@ -50,6 +51,25 @@ func getRestGetScavenges(cliCtx context.CLIContext) http.HandlerFunc {
 		solutionHash := vars["solutionHash"]
 
 		route := fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute, types.QueryGetScavenge, solutionHash)
+		res, height, err := cliCtx.QueryWithData(route, nil)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getRestListCommits(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryListCommits)
 		res, height, err := cliCtx.QueryWithData(route, nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
