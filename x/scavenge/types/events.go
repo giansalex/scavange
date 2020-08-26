@@ -5,6 +5,7 @@ const (
 	EventTypeCreateScavenge = "CreateScavenge"
 	EventTypeCommitSolution = "CommitSolution"
 	EventTypeSolveScavenge  = "SolveScavenge"
+	EventTypeDeleteScavenge = "DeleteScavenge"
 
 	AttributeDescription           = "description"
 	AttributeSolution              = "solution"
