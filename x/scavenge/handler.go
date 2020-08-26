@@ -138,6 +138,9 @@ func handleMsgDeleteScavenge(ctx sdk.Context, k Keeper, msg MsgDeleteScavenge) (
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "Scavenge with that solution hash doesn't exists")
 	}
+	if scavenge.Creator.String() != msg.Creator.String() {
+		return nil, sdkerrors.Wrap(err, "You aren't owner")
+	}
 	if scavenge.Scavenger != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Scavenge has already been solved")
 	}
@@ -148,7 +151,7 @@ func handleMsgDeleteScavenge(ctx sdk.Context, k Keeper, msg MsgDeleteScavenge) (
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeyAction, types.EventTypeDeleteScavenge),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Scavenger.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Creator.String()),
 			sdk.NewAttribute(types.AttributeSolutionHash, msg.SolutionHash),
 		),
 	)
