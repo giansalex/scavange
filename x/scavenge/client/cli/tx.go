@@ -30,6 +30,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 	scavengeTxCmd.AddCommand(flags.PostCommands(
 		GetCmdCreateScavenge(cdc),
+		GetCmdUpdateScavenge(cdc),
 		GetCmdCommitSolution(cdc),
 		GetCmdRevealSolution(cdc),
 		GetCmdDeleteScavenge(cdc),
@@ -140,6 +141,37 @@ func GetCmdDeleteScavenge(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgDeleteScavenge(cliCtx.GetFromAddress(), solutionHashString)
 			err := msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func GetCmdUpdateScavenge(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "updateScavenge [reward] [solution] [description]",
+		Short: "Update a scavenge",
+		Args:  cobra.ExactArgs(3), // Does your request require arguments
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			reward, err := sdk.ParseCoins(args[0])
+			if err != nil {
+				return err
+			}
+
+			var solution = args[1]
+			var solutionHash = sha256.Sum256([]byte(solution))
+			var solutionHashString = hex.EncodeToString(solutionHash[:])
+
+			msg := types.NewMsgUpdateScavenge(cliCtx.GetFromAddress(), args[2], solutionHashString, reward)
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}

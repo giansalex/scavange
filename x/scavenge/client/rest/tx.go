@@ -170,3 +170,45 @@ func getDeleteScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
 }
+
+type updateScavengeReq struct {
+	BaseReq     rest.BaseReq `json:"base_req"`
+	Solution    string       `json:"solution"`
+	Description string       `json:"description"`
+	Reward      string       `json:"reward"`
+}
+
+func getUpdateScavenge(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req updateScavengeReq
+
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+
+		reward, err := sdk.ParseCoins(req.Reward)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		addr, _ := sdk.AccAddressFromBech32(baseReq.From)
+		var solutionHash = sha256.Sum256([]byte(req.Solution))
+		var solutionHashString = hex.EncodeToString(solutionHash[:])
+
+		msg := types.NewMsgUpdateScavenge(addr, req.Description, solutionHashString, reward)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+	}
+}
