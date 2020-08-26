@@ -28,7 +28,7 @@ const DeleteScavengeConst = "DeleteScavenge"
 
 // nolint
 func (msg MsgDeleteScavenge) Route() string { return RouterKey }
-func (msg MsgDeleteScavenge) Type() string  { return CommitSolutionConst }
+func (msg MsgDeleteScavenge) Type() string  { return DeleteScavengeConst }
 func (msg MsgDeleteScavenge) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.Creator)}
 }
