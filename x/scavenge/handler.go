@@ -144,8 +144,14 @@ func handleMsgDeleteScavenge(ctx sdk.Context, k Keeper, msg MsgDeleteScavenge) (
 	if scavenge.Scavenger != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Scavenge has already been solved")
 	}
-
 	k.DeleteScavenge(ctx, msg.SolutionHash)
+
+	moduleAcct := sdk.AccAddress(crypto.AddressHash([]byte(types.ModuleName)))
+	sdkError := k.CoinKeeper.SendCoins(ctx, moduleAcct, scavenge.Creator, scavenge.Reward)
+	if sdkError != nil {
+		return nil, sdkError
+	}
+
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
