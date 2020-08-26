@@ -20,6 +20,7 @@ func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/scavenge/", getCreateScavenge(cliCtx)).Methods("POST")
 	r.HandleFunc("/scavenge/commit", getCommitScavenge(cliCtx)).Methods("POST")
 	r.HandleFunc("/scavenge/reveal", getRevealScavenge(cliCtx)).Methods("POST")
+	r.HandleFunc("/scavenge/delete", getDeleteScavenge(cliCtx)).Methods("DELETE")
 }
 
 type createScavengeReq struct {
@@ -125,6 +126,37 @@ func getRevealScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 
 		addr, _ := sdk.AccAddressFromBech32(baseReq.From)
 		msg := types.NewMsgRevealSolution(addr, req.Solution)
+		err := msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+	}
+}
+
+type deleteScavengeReq struct {
+	BaseReq  rest.BaseReq `json:"base_req"`
+	Solution string       `json:"solution"`
+}
+
+func getDeleteScavenge(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req deleteScavengeReq
+
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+
+		addr, _ := sdk.AccAddressFromBech32(baseReq.From)
+		msg := types.NewMsgDeleteScavenge(addr, req.Solution)
 		err := msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
