@@ -6,6 +6,7 @@ const (
 	EventTypeCommitSolution = "CommitSolution"
 	EventTypeSolveScavenge  = "SolveScavenge"
 	EventTypeDeleteScavenge = "DeleteScavenge"
+	EventTypeUpdateScavenge = "UpdateScavenge"
 
 	AttributeDescription           = "description"
 	AttributeSolution              = "solution"
