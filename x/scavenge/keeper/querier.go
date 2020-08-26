@@ -19,6 +19,8 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return getScavenge(ctx, path[1:], k)
 		case types.QueryCommit:
 			return getCommit(ctx, path[1:], k)
+		case types.QueryListCommits:
+			return listCommits(ctx, k)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown scavenge query endpoint")
 		}
@@ -59,6 +61,24 @@ func getScavenge(ctx sdk.Context, path []string, k Keeper) (res []byte, sdkError
 	res, err = codec.MarshalJSONIndent(k.cdc, scavenge)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+
+	return res, nil
+}
+
+func listCommits(ctx sdk.Context, k Keeper) ([]byte, error) {
+	var commitList types.QueryResCommits
+
+	iterator := k.GetCommitsIterator(ctx)
+
+	for ; iterator.Valid(); iterator.Next() {
+		solutionScavengerHash := RemovePrefixFromHash(iterator.Key(), []byte(types.CommitPrefix))
+		commitList = append(commitList, string(solutionScavengerHash))
+	}
+
+	res, err := codec.MarshalJSONIndent(k.cdc, commitList)
+	if err != nil {
+		return res, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 
 	return res, nil

@@ -16,10 +16,14 @@ scavengeCLI q account $(scavengeCLI keys show you -a)
 
 # start
 scavengeCLI tx scavenge createScavenge 10foo "giansalex" "who am i?" --from me
+# list scavenges
+scavengeCLI q scavenge list
 # commit solution
 scavengeCLI tx scavenge commitSolution "giansalex" --from you
 # verify commited solution
 scavengeCLI q scavenge commited "giansalex" $(scavengeCLI keys show you -a)
+# list commits
+scavengeCLI q scavenge commits
 # reveal solution
 scavengeCLI tx scavenge revealSolution "giansalex" --from you
 

@@ -30,6 +30,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		flags.GetCommands(
 			GetCmdListScavenges(queryRoute, cdc),
 			GetCmdGetScavenge(queryRoute, cdc),
+			GetCmdListCommits(queryRoute, cdc),
 			GetCmdGetCommit(queryRoute, cdc),
 		)...,
 	)
@@ -75,6 +76,25 @@ func GetCmdGetScavenge(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			var out types.Scavenge
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
+func GetCmdListCommits(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "commits",
+		Short: "commits",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/"+types.QueryListCommits, queryRoute), nil)
+			if err != nil {
+				fmt.Printf("could not get scavenges\n%s\n", err.Error())
+				return nil
+			}
+
+			var out types.QueryResScavenges
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(out)
 		},
