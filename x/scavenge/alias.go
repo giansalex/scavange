@@ -39,4 +39,5 @@ type (
 	MsgCreateScavenge = types.MsgCreateScavenge
 	MsgCommitSolution = types.MsgCommitSolution
 	MsgRevealSolution = types.MsgRevealSolution
+	MsgDeleteScavenge = types.MsgDeleteScavenge
 )
