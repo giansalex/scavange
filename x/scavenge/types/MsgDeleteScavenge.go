@@ -11,14 +11,14 @@ var _ sdk.Msg = &MsgDeleteScavenge{}
 
 // MsgDeleteScavenge - struct for unjailing jailed validator
 type MsgDeleteScavenge struct {
-	Scavenger    sdk.AccAddress `json:"scavenger" yaml:"scavenger"`       // address of the scavenger
+	Creator      sdk.AccAddress `json:"creator" yaml:"creator"`           // address of the scavenger creator
 	SolutionHash string         `json:"solutionhash" yaml:"solutionhash"` // solutionhash of the scavenge
 }
 
 // NewMsgDeleteScavenge creates a new MsgDeleteScavenge instance
-func NewMsgDeleteScavenge(scavenger sdk.AccAddress, solutionHash string) MsgDeleteScavenge {
+func NewMsgDeleteScavenge(creator sdk.AccAddress, solutionHash string) MsgDeleteScavenge {
 	return MsgDeleteScavenge{
-		Scavenger:    scavenger,
+		Creator:      creator,
 		SolutionHash: solutionHash,
 	}
 }
@@ -30,7 +30,7 @@ const DeleteScavengeConst = "DeleteScavenge"
 func (msg MsgDeleteScavenge) Route() string { return RouterKey }
 func (msg MsgDeleteScavenge) Type() string  { return CommitSolutionConst }
 func (msg MsgDeleteScavenge) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.Scavenger)}
+	return []sdk.AccAddress{sdk.AccAddress(msg.Creator)}
 }
 
 // GetSignBytes gets the bytes for the message signer to sign on
@@ -41,7 +41,7 @@ func (msg MsgDeleteScavenge) GetSignBytes() []byte {
 
 // ValidateBasic validity check for the AnteHandler
 func (msg MsgDeleteScavenge) ValidateBasic() error {
-	if msg.Scavenger.Empty() {
+	if msg.Creator.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "creator can't be empty")
 	}
 	if msg.SolutionHash == "" {
