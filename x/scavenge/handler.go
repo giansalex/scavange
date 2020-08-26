@@ -24,6 +24,8 @@ func NewHandler(k Keeper) sdk.Handler {
 			return handleMsgRevealSolution(ctx, k, msg)
 		case MsgDeleteScavenge:
 			return handleMsgDeleteScavenge(ctx, k, msg)
+		case MsgUpdateScavenge:
+			return handleMsgUpdateScavenge(ctx, k, msg)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest,
 				fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg))
@@ -162,5 +164,49 @@ func handleMsgDeleteScavenge(ctx sdk.Context, k Keeper, msg MsgDeleteScavenge) (
 		),
 	)
 
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+}
+
+// handleMsgUpdateScavenge update a scavenge
+func handleMsgUpdateScavenge(ctx sdk.Context, k Keeper, msg MsgUpdateScavenge) (*sdk.Result, error) {
+	scavenge, err := k.GetScavenge(ctx, msg.SolutionHash)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Scavenge with that solution hash already exists")
+	}
+
+	if scavenge.Creator.String() != msg.Creator.String() {
+		return nil, sdkerrors.Wrap(err, "You aren't owner")
+	}
+
+	if scavenge.Scavenger != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Scavenge has already been solved")
+	}
+
+	moduleAcct := sdk.AccAddress(crypto.AddressHash([]byte(types.ModuleName)))
+	sdkError := k.CoinKeeper.SendCoins(ctx, moduleAcct, scavenge.Creator, scavenge.Reward)
+	if sdkError != nil {
+		return nil, sdkError
+	}
+
+	sdkError = k.CoinKeeper.SendCoins(ctx, scavenge.Creator, moduleAcct, msg.Reward)
+	if sdkError != nil {
+		return nil, sdkError
+	}
+
+	scavenge.Description = msg.Description
+	scavenge.Reward = msg.Reward
+
+	k.SetScavenge(ctx, scavenge)
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeyAction, types.EventTypeUpdateScavenge),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Creator.String()),
+			sdk.NewAttribute(types.AttributeDescription, msg.Description),
+			sdk.NewAttribute(types.AttributeSolutionHash, msg.SolutionHash),
+			sdk.NewAttribute(types.AttributeReward, msg.Reward.String()),
+		),
+	)
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
