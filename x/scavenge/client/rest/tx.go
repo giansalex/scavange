@@ -155,8 +155,12 @@ func getDeleteScavenge(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
+		var solution = req.Solution
+		var solutionHash = sha256.Sum256([]byte(solution))
+		var solutionHashString = hex.EncodeToString(solutionHash[:])
+
 		addr, _ := sdk.AccAddressFromBech32(baseReq.From)
-		msg := types.NewMsgDeleteScavenge(addr, req.Solution)
+		msg := types.NewMsgDeleteScavenge(addr, solutionHashString)
 		err := msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

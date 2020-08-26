@@ -135,8 +135,10 @@ func GetCmdDeleteScavenge(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			var solution = args[0]
+			var solutionHash = sha256.Sum256([]byte(solution))
+			var solutionHashString = hex.EncodeToString(solutionHash[:])
 
-			msg := types.NewMsgDeleteScavenge(cliCtx.GetFromAddress(), solution)
+			msg := types.NewMsgDeleteScavenge(cliCtx.GetFromAddress(), solutionHashString)
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err
