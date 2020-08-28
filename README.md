@@ -9,7 +9,7 @@ scavengeD start
 
 Other terminal (client commands)
 ```bash
-# show me account balance
+# show me account balance (Address ex: github1xdwt03lmzd4vda4mykah6dkta79n8xdyjmadf2)
 scavengeCLI q account $(scavengeCLI keys show me -a)
 # show you account balance
 scavengeCLI q account $(scavengeCLI keys show you -a)
