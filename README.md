@@ -74,7 +74,7 @@ scavengeD init mynode2 --chain-id scavenge
 Configure peers
 ```bash
 # Replace NODE_1_ID
-vim /.nsd/config/config.toml
+vim /.scavengeD/config/config.toml
 persistent_peers = "NODE_1_ID@first_node_ip:26656"
 ```
 
