@@ -4,8 +4,12 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"path/filepath"
 
+	"github.com/giansalex/scavenge/x/wasm"
+	"github.com/spf13/viper"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
@@ -45,6 +49,7 @@ var (
 		staking.AppModuleBasic{},
 		distr.AppModuleBasic{},
 		params.AppModuleBasic{},
+		wasm.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
 
@@ -91,12 +96,17 @@ type NewApp struct {
 	supplyKeeper   supply.Keeper
 	paramsKeeper   params.Keeper
 	scavengeKeeper scavenge.Keeper
+	wasmKeeper     wasm.Keeper
 
 	// Module Manager
 	mm *module.Manager
 
 	// simulation manager
 	sm *module.SimulationManager
+}
+
+type WasmWrapper struct {
+	Wasm wasm.WasmConfig `mapstructure:"wasm"`
 }
 
 // verify app interface at compile time
@@ -115,7 +125,7 @@ func NewInitApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest b
 	bApp.SetAppVersion(version.Version)
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
-		supply.StoreKey, distr.StoreKey, slashing.StoreKey, params.StoreKey, scavenge.StoreKey)
+		supply.StoreKey, distr.StoreKey, slashing.StoreKey, params.StoreKey, scavenge.StoreKey, wasm.StoreKey)
 
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
@@ -136,6 +146,7 @@ func NewInitApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest b
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[distr.ModuleName] = app.paramsKeeper.Subspace(distr.DefaultParamspace)
 	app.subspaces[slashing.ModuleName] = app.paramsKeeper.Subspace(slashing.DefaultParamspace)
+	app.subspaces[wasm.ModuleName] = app.paramsKeeper.Subspace(wasm.DefaultParamspace)
 
 	// The AccountKeeper handles address -> account lookups
 	app.accountKeeper = auth.NewAccountKeeper(
@@ -200,6 +211,24 @@ func NewInitApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest b
 		keys[scavenge.StoreKey],
 	)
 
+	// just re-use the full router - do we want to limit this more?
+	var wasmRouter = bApp.Router()
+	// better way to get this dir???
+	homeDir := viper.GetString(cli.HomeFlag)
+	wasmDir := filepath.Join(homeDir, "wasm")
+
+	wasmWrap := WasmWrapper{Wasm: wasm.DefaultWasmConfig()}
+	err := viper.Unmarshal(&wasmWrap)
+	if err != nil {
+		panic("error while reading wasm config: " + err.Error())
+	}
+	wasmConfig := wasmWrap.Wasm
+
+	// The last arguments can contain custom message handlers, and custom query handlers,
+	// if we want to allow any custom callbacks
+	supportedFeatures := "staking"
+	app.wasmKeeper = wasm.NewKeeper(app.cdc, keys[wasm.StoreKey], app.subspaces[wasm.ModuleName], app.accountKeeper, app.bankKeeper, app.stakingKeeper, wasmRouter, wasmDir, wasmConfig, supportedFeatures, nil, nil)
+
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.accountKeeper),
@@ -209,6 +238,7 @@ func NewInitApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest b
 		distr.NewAppModule(app.distrKeeper, app.accountKeeper, app.supplyKeeper, app.stakingKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.accountKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
+		wasm.NewAppModule(app.wasmKeeper),
 	)
 
 	app.mm.SetOrderBeginBlockers(distr.ModuleName, slashing.ModuleName)
@@ -226,6 +256,7 @@ func NewInitApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest b
 		scavenge.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
+		wasm.ModuleName,
 	)
 
 	// register all module routes and module queriers
@@ -249,7 +280,7 @@ func NewInitApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest b
 	app.MountKVStores(keys)
 	app.MountTransientStores(tkeys)
 
-	err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
+	err = app.LoadLatestVersion(app.keys[bam.MainStoreKey])
 	if err != nil {
 		tmos.Exit(err.Error())
 	}
