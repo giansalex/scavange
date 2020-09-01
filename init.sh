@@ -1,6 +1,6 @@
 #!/bin/bash
-rm -r ~/.scavengeCLI
-rm -r ~/.scavengeD
+rm -rf ~/.scavengeCLI
+rm -rf ~/.scavengeD
 
 scavengeD init mynode --chain-id scavenge
 
