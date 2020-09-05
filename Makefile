@@ -18,6 +18,10 @@ install: go.sum
 		go install -mod=readonly $(BUILD_FLAGS) ./cmd/scavengeD
 		go install -mod=readonly $(BUILD_FLAGS) ./cmd/scavengeCLI
 
+build: go.sum
+		go build -mod=readonly $(BUILD_FLAGS) ./cmd/scavengeD
+		go build -mod=readonly $(BUILD_FLAGS) ./cmd/scavengeCLI
+
 go.sum: go.mod
 		@echo "--> Ensure dependencies have not been modified"
 		GO111MODULE=on go mod verify
